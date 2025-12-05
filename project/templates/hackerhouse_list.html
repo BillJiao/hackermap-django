@@ -1,19 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hacker Houses</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'project/styles.css' %}">
-</head>
+{% block title %}Hacker Houses{% endblock %}
 
-<body>
-    <h1>Hacker Houses</h1>
+{% block content %}
+<h1>Hacker Houses</h1>
 
-    <div class="grid">
-        {% for house in hackerhouses %}
+<div class="grid">
+    {% for house in hackerhouses %}
+    <a href="{% url 'hackerhouse_detail' house.pk %}" class="card-link">
         <article class="card">
             {% if house.images.all %}
             <img src="{{ house.images.all.0.image.url }}" alt="{{ house.title }}" class="card-image">
@@ -34,13 +28,16 @@
                     <span class="capacity-badge">
                         👥 {{ house.capacity }} spots
                     </span>
+                    <span class="status-indicator {% if house.is_active %}active{% else %}inactive{% endif %}">
+                        <span class="status-dot"></span>
+                        <span class="status-text">{% if house.is_active %}Active{% else %}Inactive{% endif %}</span>
+                    </span>
                 </div>
             </div>
         </article>
-        {% empty %}
-        <p>No hacker houses found.</p>
-        {% endfor %}
-    </div>
-</body>
-
-</html>
+    </a>
+    {% empty %}
+    <p>No hacker houses found.</p>
+    {% endfor %}
+</div>
+{% endblock %}

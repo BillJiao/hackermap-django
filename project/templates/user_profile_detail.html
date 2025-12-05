@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <div class="profile-card">
+        <!-- Avatar -->
+        <div class="profile-avatar-wrapper">
+            {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="profile-avatar-img">
+            {% else %}
+                <div class="profile-avatar-placeholder">
+                    <span class="no-avatar-text">No image found</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Display Name / Username -->
+        <h1 class="profile-name">{{ user.profile.display_name|default:user.username }}</h1>
+
+        <!-- Bio -->
+        {% if user.profile.bio %}
+            <p class="profile-bio">{{ user.profile.bio }}</p>
+        {% else %}
+            <p class="profile-bio profile-bio-empty">No bio yet</p>
+        {% endif %}
+
+        <!-- Time Zone -->
+        <div class="profile-meta">
+            <span class="profile-timezone">
+                <span class="timezone-icon">◷</span>
+                {{ user.profile.time_zone }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="detail-footer">
+        <span class="footer-date">Member since {{ user.date_joined|date:"M Y" }}</span>
+        <a href="javascript:history.back()" class="back-link">← Back</a>
+    </div>
+</div>
+{% endblock %}

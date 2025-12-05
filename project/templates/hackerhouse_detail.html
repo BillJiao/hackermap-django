@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ hackerhouse.title }}{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <!-- Header with title and status -->
+    <header class="detail-header">
+        <div class="status-indicator {% if hackerhouse.is_active %}active{% else %}inactive{% endif %}">
+            <span class="status-dot"></span>
+            <span class="status-text">{% if hackerhouse.is_active %}Active{% else %}Inactive{% endif %}</span>
+        </div>
+        <h1 class="detail-title">{{ hackerhouse.title }}</h1>
+        <p class="detail-address">{{ hackerhouse.address }}</p>
+    </header>
+
+    <!-- Image Gallery -->
+    {% if hackerhouse.images.all %}
+    <div class="detail-gallery">
+        {% for image in hackerhouse.images.all %}
+        <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="gallery-image">
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Description Section -->
+    <section class="description-section">
+        <p class="description-text">{{ hackerhouse.description }}</p>
+    </section>
+
+    <!-- Capacity Badge -->
+    <div class="capacity-section">
+        <div class="capacity-display">
+            <span class="capacity-number">{{ hackerhouse.members.count }}</span>
+            <span class="capacity-divider">/</span>
+            <span class="capacity-total">{{ hackerhouse.capacity }}</span>
+        </div>
+        <span class="capacity-label">Members</span>
+    </div>
+
+    <!-- Members Section -->
+    <section class="members-section">
+        <h2 class="members-heading">Residents</h2>
+        <div class="members-grid">
+            <!-- Host (largest circle) -->
+            <a href="{% url 'user_profile_detail' hackerhouse.host.pk %}" class="member-card host-card">
+                <div class="member-avatar host-avatar">
+                    {% if hackerhouse.host.profile.avatar %}
+                    <img src="{{ hackerhouse.host.profile.avatar.url }}" alt="{{ hackerhouse.host.username }}">
+                    {% else %}
+                    <span class="avatar-initial">{{ hackerhouse.host.username|slice:":1"|upper }}</span>
+                    {% endif %}
+                    <span class="host-crown">★</span>
+                </div>
+                <span class="member-name">{{ hackerhouse.host.username }}</span>
+                <span class="member-role">Host</span>
+            </a>
+            <!-- Other Members -->
+            {% for member in hackerhouse.members.all %}
+            {% if member != hackerhouse.host %}
+
+            <a href="{% url 'user_profile_detail' member.pk %}" class="member-card">
+                <div class="member-avatar">
+                    {% if member.profile.avatar %}
+                    <img src="{{ member.profile.avatar.url }}" alt="{{ member.username }}">
+                    {% else %}
+                    <span class="avatar-initial">{{ member.username|slice:":1"|upper }}</span>
+                    {% endif %}
+                </div>
+                <span class="member-name">{{ member.username }}</span>
+                <span class="member-role">Member</span>
+            </a>
+            {% endif %}
+            {% empty %}
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Footer Info -->
+    <footer class="detail-footer">
+        <span class="footer-date">Listed {{ hackerhouse.created_at|date:"M d, Y" }}</span>
+        <a href="{% url 'hackerhouse_list' %}" class="back-link">← Back to all houses</a>
+    </footer>
+</div>
+{% endblock %}

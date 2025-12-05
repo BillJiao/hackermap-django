@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HackerMap{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'project/styles.css' %}">
+</head>
+
+<body>
+    <!-- Sidebar Toggle -->
+    <input type="checkbox" id="sidebar-toggle" class="sidebar-checkbox">
+    <label for="sidebar-toggle" class="sidebar-trigger">
+        <span class="trigger-bar"></span>
+        <span class="trigger-bar"></span>
+        <span class="trigger-bar"></span>
+    </label>
+
+    <!-- Sidebar Overlay -->
+    <label for="sidebar-toggle" class="sidebar-overlay"></label>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-logo">⌂</span>
+            <span class="sidebar-brand">HackerMap</span>
+        </div>
+
+        <ul class="sidebar-nav">
+            <li class="sidebar-item">
+                <a href="{% url 'hackerhouse_list' %}" class="sidebar-link">
+                    <span class="sidebar-icon">🏠</span>
+                    <span class="sidebar-text">Home</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link">
+                    <span class="sidebar-icon">📅</span>
+                    <span class="sidebar-text">Events</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link">
+                    <span class="sidebar-icon">★</span>
+                    <span class="sidebar-text">Following</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-divider"></div>
+
+        <ul class="sidebar-nav sidebar-auth">
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link">
+                    <span class="sidebar-icon">→</span>
+                    <span class="sidebar-text">Login</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="#" class="sidebar-link sidebar-link-accent">
+                    <span class="sidebar-icon">+</span>
+                    <span class="sidebar-text">Create Account</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+
+</html>
+
