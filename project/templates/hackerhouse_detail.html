@@ -16,11 +16,88 @@
 
     <!-- Image Gallery -->
     {% if hackerhouse.images.all %}
-    <div class="detail-gallery">
-        {% for image in hackerhouse.images.all %}
-        <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="gallery-image">
-        {% endfor %}
+    <div class="gallery-container">
+        <button type="button" class="gallery-nav gallery-prev" aria-label="Previous image">
+            <span>‹</span>
+        </button>
+        
+        <div class="gallery-viewport">
+            {% for image in hackerhouse.images.all %}
+            <img src="{{ image.image.url }}" 
+                 alt="{{ image.caption }}" 
+                 class="gallery-image {% if forloop.first %}active{% endif %}"
+                 data-index="{{ forloop.counter0 }}">
+            {% endfor %}
+        </div>
+        
+        <button type="button" class="gallery-nav gallery-next" aria-label="Next image">
+            <span>›</span>
+        </button>
+        
+        {% if hackerhouse.images.count > 1 %}
+        <div class="gallery-indicators">
+            {% for image in hackerhouse.images.all %}
+            <button type="button" 
+                    class="gallery-dot {% if forloop.first %}active{% endif %}" 
+                    data-index="{{ forloop.counter0 }}"
+                    aria-label="Go to image {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
+    
+    <script>
+    (function() {
+        const container = document.querySelector('.gallery-container');
+        if (!container) return;
+        
+        const images = container.querySelectorAll('.gallery-image');
+        const dots = container.querySelectorAll('.gallery-dot');
+        const prevBtn = container.querySelector('.gallery-prev');
+        const nextBtn = container.querySelector('.gallery-next');
+        
+        if (images.length <= 1) {
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            return;
+        }
+        
+        let currentIndex = 0;
+        
+        function showImage(index) {
+            // Handle wrap-around
+            if (index < 0) index = images.length - 1;
+            if (index >= images.length) index = 0;
+            
+            // Update images
+            images.forEach((img, i) => {
+                img.classList.toggle('active', i === index);
+            });
+            
+            // Update dots
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            
+            currentIndex = index;
+        }
+        
+        prevBtn.addEventListener('click', () => showImage(currentIndex - 1));
+        nextBtn.addEventListener('click', () => showImage(currentIndex + 1));
+        
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                showImage(parseInt(dot.dataset.index));
+            });
+        });
+        
+        // Keyboard navigation
+        container.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') showImage(currentIndex - 1);
+            if (e.key === 'ArrowRight') showImage(currentIndex + 1);
+        });
+    })();
+    </script>
     {% endif %}
 
     <!-- Description Section -->
@@ -38,12 +115,68 @@
         <span class="capacity-label">Members</span>
     </div>
 
+    <!-- Join/Leave House Action -->
+    {% if user.is_authenticated %}
+    <div class="house-action-section">
+        {% if is_host %}
+            <div class="house-action-status">
+                <span class="action-icon">★</span>
+                <span>You are the host of this house</span>
+            </div>
+        {% elif is_member %}
+            <form action="{% url 'leave_house' hackerhouse.pk %}" method="post" class="house-action-form">
+                {% csrf_token %}
+                <button type="submit" class="house-action-btn leave-btn">
+                    <span class="action-icon">←</span>
+                    <span>Leave House</span>
+                </button>
+            </form>
+        {% elif hackerhouse.members.count >= hackerhouse.capacity %}
+            <div class="house-action-status full">
+                <span class="action-icon">⊘</span>
+                <span>House is at full capacity</span>
+            </div>
+        {% elif not hackerhouse.is_active %}
+            <div class="house-action-status inactive">
+                <span class="action-icon">⊘</span>
+                <span>Not accepting new members</span>
+            </div>
+        {% else %}
+            <form action="{% url 'join_house' hackerhouse.pk %}" method="post" class="house-action-form">
+                {% csrf_token %}
+                <button type="submit" class="house-action-btn join-btn">
+                    <span class="action-icon">+</span>
+                    <span>Join House</span>
+                </button>
+            </form>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="house-action-section">
+        <a href="{% url 'login' %}?next={{ request.path }}" class="house-action-btn login-prompt-btn">
+            <span class="action-icon">→</span>
+            <span>Login to Join</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Members Section -->
     <section class="members-section">
         <h2 class="members-heading">Residents</h2>
         <div class="members-grid">
             <!-- Host (largest circle) -->
-            <a href="{% url 'user_profile_detail' hackerhouse.host.pk %}" class="member-card host-card">
+            <a href="{% url 'user_profile_detail' hackerhouse.host.pk %}?from_house={{ hackerhouse.pk }}" class="member-card host-card">
                 <div class="member-avatar host-avatar">
                     {% if hackerhouse.host.profile.avatar %}
                     <img src="{{ hackerhouse.host.profile.avatar.url }}" alt="{{ hackerhouse.host.username }}">
@@ -59,7 +192,7 @@
             {% for member in hackerhouse.members.all %}
             {% if member != hackerhouse.host %}
 
-            <a href="{% url 'user_profile_detail' member.pk %}" class="member-card">
+            <a href="{% url 'user_profile_detail' member.pk %}?from_house={{ hackerhouse.pk }}" class="member-card">
                 <div class="member-avatar">
                     {% if member.profile.avatar %}
                     <img src="{{ member.profile.avatar.url }}" alt="{{ member.username }}">

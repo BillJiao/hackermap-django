@@ -10,6 +10,28 @@
 </head>
 
 <body>
+    <!-- Profile Avatar (only visible when logged in) -->
+    {% if user.is_authenticated %}
+    <div class="user-profile-widget">
+        <a href="{% url 'user_profile_detail' user.pk %}" class="profile-widget-link">
+            <div class="profile-widget-avatar">
+                {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+                {% else %}
+                    <span class="profile-widget-initial">{{ user.username|slice:":1"|upper }}</span>
+                {% endif %}
+            </div>
+            <span class="profile-widget-name">{{ user.username }}</span>
+        </a>
+        <form action="{% url 'logout' %}" method="post" class="logout-form-inline">
+            {% csrf_token %}
+            <button type="submit" class="profile-widget-logout" title="Logout">
+                <span>↗</span>
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
     <!-- Sidebar Toggle -->
     <input type="checkbox" id="sidebar-toggle" class="sidebar-checkbox">
     <label for="sidebar-toggle" class="sidebar-trigger">
@@ -52,8 +74,25 @@
         <div class="sidebar-divider"></div>
 
         <ul class="sidebar-nav sidebar-auth">
+            {% if user.is_authenticated %}
             <li class="sidebar-item">
-                <a href="#" class="sidebar-link">
+                <a href="{% url 'user_profile_detail' user.pk %}" class="sidebar-link">
+                    <span class="sidebar-icon">●</span>
+                    <span class="sidebar-text">{{ user.username }}</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <form action="{% url 'logout' %}" method="post" class="logout-form-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="sidebar-link sidebar-link-logout">
+                        <span class="sidebar-icon">←</span>
+                        <span class="sidebar-text">Logout</span>
+                    </button>
+                </form>
+            </li>
+            {% else %}
+            <li class="sidebar-item">
+                <a href="{% url 'login' %}" class="sidebar-link">
                     <span class="sidebar-icon">→</span>
                     <span class="sidebar-text">Login</span>
                 </a>
@@ -64,6 +103,7 @@
                     <span class="sidebar-text">Create Account</span>
                 </a>
             </li>
+            {% endif %}
         </ul>
     </nav>
 

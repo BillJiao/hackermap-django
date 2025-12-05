@@ -1,14 +1,23 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ user.username }}{% endblock %}
+{% block title %}{{ profile_user.username }}{% endblock %}
 
 {% block content %}
 <div class="detail-container">
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="message message-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="profile-card">
         <!-- Avatar -->
         <div class="profile-avatar-wrapper">
-            {% if user.profile.avatar %}
-                <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="profile-avatar-img">
+            {% if profile_user.profile.avatar %}
+                <img src="{{ profile_user.profile.avatar.url }}" alt="{{ profile_user.username }}" class="profile-avatar-img">
             {% else %}
                 <div class="profile-avatar-placeholder">
                     <span class="no-avatar-text">No image found</span>
@@ -17,11 +26,52 @@
         </div>
 
         <!-- Display Name / Username -->
-        <h1 class="profile-name">{{ user.profile.display_name|default:user.username }}</h1>
+        <h1 class="profile-name">{{ profile_user.profile.display_name|default:profile_user.username }}</h1>
+
+        <!-- Follow Stats -->
+        <div class="profile-follow-stats">
+            <span class="follow-stat">
+                <strong>{{ followers_count }}</strong> followers
+            </span>
+            <span class="follow-stat-divider">·</span>
+            <span class="follow-stat">
+                <strong>{{ following_count }}</strong> following
+            </span>
+        </div>
+
+        <!-- Follow Button -->
+        {% if not is_own_profile %}
+        <div class="follow-action-section">
+            {% if user.is_authenticated %}
+                <form action="{% url 'toggle_follow' profile_user.pk %}" method="post" class="follow-form">
+                    {% csrf_token %}
+                    {% if from_house %}
+                        <input type="hidden" name="from_house" value="{{ from_house.pk }}">
+                    {% endif %}
+                    {% if is_following %}
+                        <button type="submit" class="follow-btn unfollow-btn">
+                            <span class="follow-icon">✓</span>
+                            Following
+                        </button>
+                    {% else %}
+                        <button type="submit" class="follow-btn">
+                            <span class="follow-icon">+</span>
+                            Follow
+                        </button>
+                    {% endif %}
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}?next={{ request.path }}{% if from_house %}&from_house={{ from_house.pk }}{% endif %}" class="follow-btn login-to-follow-btn">
+                    <span class="follow-icon">→</span>
+                    Log in to follow
+                </a>
+            {% endif %}
+        </div>
+        {% endif %}
 
         <!-- Bio -->
-        {% if user.profile.bio %}
-            <p class="profile-bio">{{ user.profile.bio }}</p>
+        {% if profile_user.profile.bio %}
+            <p class="profile-bio">{{ profile_user.profile.bio }}</p>
         {% else %}
             <p class="profile-bio profile-bio-empty">No bio yet</p>
         {% endif %}
@@ -30,15 +80,19 @@
         <div class="profile-meta">
             <span class="profile-timezone">
                 <span class="timezone-icon">◷</span>
-                {{ user.profile.time_zone }}
+                {{ profile_user.profile.time_zone }}
             </span>
         </div>
     </div>
 
     <!-- Footer -->
     <div class="detail-footer">
-        <span class="footer-date">Member since {{ user.date_joined|date:"M Y" }}</span>
-        <a href="javascript:history.back()" class="back-link">← Back</a>
+        <span class="footer-date">Member since {{ profile_user.date_joined|date:"M Y" }}</span>
+        {% if from_house %}
+            <a href="{% url 'hackerhouse_detail' from_house.pk %}" class="back-link">← Back to {{ from_house.title }}</a>
+        {% else %}
+            <a href="{% url 'hackerhouse_list' %}" class="back-link">← Back to all houses</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -13,7 +13,7 @@
     --sidebar-bg: #0a0a0a;
     --sidebar-text: #e8e8e8;
     --sidebar-hover: #1a1a1a;
-    --sidebar-accent: #ff6b35;
+    --sidebar-accent: #474747;
     --trigger-size: 44px;
 }
 
@@ -250,24 +250,141 @@ h1 {
 }
 
 /* Gallery */
-.detail-gallery {
+.gallery-container {
+    position: relative;
     display: flex;
-    gap: 1rem;
-    overflow-x: auto;
-    padding-bottom: 1rem;
+    align-items: center;
+    justify-content: center;
     margin-bottom: 2.5rem;
-    scroll-snap-type: x mandatory;
+    gap: 1rem;
+}
+
+.gallery-viewport {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    height: 380px;
+    overflow: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    background: #f6f6f6;
 }
 
 .gallery-image {
-    flex: 0 0 auto;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 400px;
-    height: 280px;
+    height: 100%;
     object-fit: cover;
-    border-radius: var(--radius);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.gallery-image.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.gallery-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
-    scroll-snap-align: start;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.75rem;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.gallery-nav:hover {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    border-color: var(--sidebar-bg);
+    transform: scale(1.05);
+}
+
+.gallery-nav:active {
+    transform: scale(0.95);
+}
+
+.gallery-indicators {
+    position: absolute;
+    bottom: -2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+}
+
+.gallery-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-color);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.gallery-dot:hover {
+    background: var(--text-secondary);
+}
+
+.gallery-dot.active {
+    background: var(--text-primary);
+    transform: scale(1.25);
+}
+
+@media (max-width: 768px) {
+    .gallery-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .gallery-viewport {
+        height: 280px;
+        max-width: 100%;
+    }
+    
+    .gallery-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .gallery-prev {
+        left: 0.5rem;
+    }
+    
+    .gallery-next {
+        right: 0.5rem;
+    }
+    
+    .gallery-nav:hover {
+        background: var(--sidebar-bg);
+        transform: translateY(-50%) scale(1.05);
+    }
+    
+    .gallery-indicators {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        margin-top: 0.5rem;
+    }
 }
 
 /* Description */
@@ -321,6 +438,134 @@ h1 {
     letter-spacing: 0.15em;
     color: var(--text-secondary);
     margin-top: 0.25rem;
+}
+
+/* House Action Section (Join/Leave) */
+.house-action-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.house-action-form {
+    margin: 0;
+}
+
+.house-action-btn {
+    font-family: 'Andale Mono', monospace;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.house-action-btn .action-icon {
+    font-size: 1.1rem;
+}
+
+.join-btn {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+}
+
+.join-btn:hover {
+    background: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.leave-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.leave-btn:hover {
+    border-color: #ef5350;
+    color: #ef5350;
+    background: rgba(239, 83, 80, 0.05);
+}
+
+.login-prompt-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.login-prompt-btn:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+
+.house-action-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 2rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+    background: #f5f5f5;
+    border: 1px solid var(--border-color);
+}
+
+.house-action-status .action-icon {
+    font-size: 1rem;
+    color: #ffc107;
+}
+
+.house-action-status.full .action-icon,
+.house-action-status.inactive .action-icon {
+    color: var(--text-secondary);
+}
+
+/* Messages */
+.messages-container {
+    margin-bottom: 2rem;
+}
+
+.message {
+    padding: 0.85rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.message-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.message-info {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #90caf9;
+}
+
+.message-warning {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
+}
+
+.message-error {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
 }
 
 /* Members Section */
@@ -582,6 +827,103 @@ h1 {
     opacity: 0.7;
 }
 
+/* Follow Stats */
+.profile-follow-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.follow-stat strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.follow-stat-divider {
+    color: var(--border-color);
+}
+
+/* Follow Action Section */
+.follow-action-section {
+    margin-bottom: 2rem;
+}
+
+.follow-form {
+    margin: 0;
+}
+
+.follow-btn {
+    font-family: 'Andale Mono', monospace;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    border: none;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+}
+
+.follow-btn:hover {
+    background: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.follow-btn:active {
+    transform: translateY(0);
+}
+
+.follow-icon {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.follow-btn:hover .follow-icon {
+    transform: scale(1.1);
+}
+
+/* Following (unfollow) button */
+.unfollow-btn {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.unfollow-btn:hover {
+    border-color: #ef5350;
+    color: #ef5350;
+    background: rgba(239, 83, 80, 0.05);
+    box-shadow: none;
+}
+
+.unfollow-btn:hover .follow-icon {
+    transform: none;
+}
+
+/* Login to follow button */
+.login-to-follow-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.login-to-follow-btn:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+    box-shadow: none;
+}
+
 @media (max-width: 600px) {
     .profile-card {
         padding: 2rem 1rem;
@@ -598,6 +940,16 @@ h1 {
 
     .profile-bio {
         font-size: 0.9rem;
+    }
+
+    .profile-follow-stats {
+        font-size: 0.85rem;
+        gap: 0.5rem;
+    }
+
+    .follow-btn {
+        padding: 0.65rem 1.5rem;
+        font-size: 0.8rem;
     }
 }
 
@@ -793,14 +1145,14 @@ h1 {
 }
 
 .sidebar-link-accent {
-    background: linear-gradient(135deg, var(--sidebar-accent), #e85a2c);
+    background: linear-gradient(135deg, var(--sidebar-accent), #707070);
     margin: 0.5rem 1rem;
     border-radius: 8px;
     font-weight: 600;
 }
 
 .sidebar-link-accent:hover {
-    background: linear-gradient(135deg, #ff7a4a, var(--sidebar-accent));
+    background: linear-gradient(135deg, #707070, var(--sidebar-accent));
     transform: translateX(4px);
 }
 
@@ -836,5 +1188,362 @@ h1 {
     .sidebar-trigger {
         top: 1rem;
         left: 1rem;
+    }
+}
+
+/* ========================================
+   USER PROFILE WIDGET (Top Right)
+   ======================================== */
+
+.user-profile-widget {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1001;
+    background: var(--sidebar-bg);
+    padding: 0.35rem 0.5rem 0.35rem 0.35rem;
+    border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.user-profile-widget:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.profile-widget-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--sidebar-text);
+    transition: opacity 0.2s ease;
+}
+
+.profile-widget-link:hover {
+    opacity: 0.85;
+}
+
+.profile-widget-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border: 2px solid var(--sidebar-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-widget-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-widget-initial {
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--sidebar-text);
+}
+
+.profile-widget-name {
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-widget-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.profile-widget-logout:hover {
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .user-profile-widget {
+        top: 1rem;
+        right: 1rem;
+    }
+    
+    .profile-widget-name {
+        display: none;
+    }
+    
+    .user-profile-widget {
+        padding: 0.25rem;
+        gap: 0.25rem;
+    }
+}
+
+/* ========================================
+   LOGIN PAGE STYLES
+   ======================================== */
+
+.login-container {
+    min-height: calc(100vh - 6rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.5rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.75rem;
+    opacity: 0.9;
+}
+
+.login-title {
+    font-family: 'Andale Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.login-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+.login-error {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+}
+
+.error-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #b91c1c;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+}
+
+.form-input {
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.95rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #fafafa;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.form-input::placeholder {
+    color: #999;
+}
+
+.form-input:focus {
+    border-color: var(--text-primary);
+    background: var(--card-bg);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.login-button {
+    font-family: 'Andale Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.login-button:hover {
+    background: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.login-button:active {
+    transform: translateY(0);
+}
+
+.button-arrow {
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
+}
+
+.login-button:hover .button-arrow {
+    transform: translateX(4px);
+}
+
+.login-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.login-footer-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.login-footer-link {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.login-footer-link:hover {
+    opacity: 0.6;
+}
+
+/* Logout form styling (inline form for POST request) */
+.logout-form-inline {
+    margin: 0;
+    padding: 0;
+    display: contents;
+}
+
+/* Sidebar logout button styling */
+button.sidebar-link-logout {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: #ef5350;
+}
+
+button.sidebar-link-logout:hover {
+    background: rgba(239, 83, 80, 0.1);
+}
+
+button.sidebar-link-logout::before {
+    background: #ef5350;
+}
+
+/* Profile widget logout button styling */
+button.profile-widget-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--sidebar-text);
+    border: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 0;
+}
+
+button.profile-widget-logout:hover {
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 1;
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .login-title {
+        font-size: 1.25rem;
     }
 }
