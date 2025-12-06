@@ -33,8 +33,17 @@ class HouseImageAdmin(admin.ModelAdmin):
 
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
-    list_display = ("follower", "following", "created_at")
-    search_fields = ("follower__username", "following__username")
+    list_display = ("follower", "get_target", "created_at")
+    search_fields = ("follower__username", "following_user__username", "following_house__title")
+    list_filter = ("created_at",)
+
+    @admin.display(description="Following")
+    def get_target(self, obj):
+        if obj.following_user:
+            return f"User: {obj.following_user}"
+        elif obj.following_house:
+            return f"House: {obj.following_house}"
+        return "-"
 
 
 @admin.register(Event)

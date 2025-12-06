@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Events — HackerMap{% endblock %}
+
+{% block content %}
+<div class="calendar-container">
+    <!-- Calendar Header -->
+    <div class="calendar-header">
+        <div class="calendar-nav">
+            <button class="cal-nav-btn" id="prevBtn">←</button>
+            <h2 class="calendar-title" id="calendarTitle">December 2025</h2>
+            <button class="cal-nav-btn" id="nextBtn">→</button>
+        </div>
+        
+        <div class="view-switcher">
+            <button class="view-btn active" data-view="month">Month</button>
+            <button class="view-btn" data-view="week">Week</button>
+            <button class="view-btn" data-view="day">Day</button>
+        </div>
+        
+        <button class="today-btn" id="todayBtn">Today</button>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar-grid" id="calendarGrid">
+        <!-- Day headers -->
+        <div class="calendar-weekdays" id="weekdayHeaders">
+            <div class="weekday">Sun</div>
+            <div class="weekday">Mon</div>
+            <div class="weekday">Tue</div>
+            <div class="weekday">Wed</div>
+            <div class="weekday">Thu</div>
+            <div class="weekday">Fri</div>
+            <div class="weekday">Sat</div>
+        </div>
+        
+        <!-- Calendar days -->
+        <div class="calendar-days" id="calendarDays">
+            <!-- Days will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="event-modal" id="eventModal">
+        <div class="event-modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <div class="modal-header">
+                <span class="modal-date" id="modalDate"></span>
+            </div>
+            <div class="modal-events" id="modalEvents">
+                <!-- Events will be populated here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Events data from Django
+const events = [
+    {% for event in events %}
+    {
+        id: {{ event.pk }},
+        title: "{{ event.title|escapejs }}",
+        description: "{{ event.description|escapejs }}",
+        start: new Date("{{ event.start_time|date:'c' }}"),
+        end: new Date("{{ event.end_time|date:'c' }}"),
+        location: "{{ event.location|escapejs }}",
+        house: {% if event.house %}"{{ event.house.title|escapejs }}"{% else %}null{% endif %},
+        partifulLink: "{{ event.partiful_link|escapejs }}",
+        isPublic: {{ event.is_public|yesno:"true,false" }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Calendar state
+let currentDate = new Date();
+let currentView = 'month';
+
+// DOM elements
+const calendarTitle = document.getElementById('calendarTitle');
+const calendarDays = document.getElementById('calendarDays');
+const weekdayHeaders = document.getElementById('weekdayHeaders');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const todayBtn = document.getElementById('todayBtn');
+const viewBtns = document.querySelectorAll('.view-btn');
+const eventModal = document.getElementById('eventModal');
+const modalClose = document.getElementById('modalClose');
+const modalDate = document.getElementById('modalDate');
+const modalEvents = document.getElementById('modalEvents');
+
+// Utility functions
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'];
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+function isSameDay(d1, d2) {
+    return d1.getDate() === d2.getDate() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getFullYear() === d2.getFullYear();
+}
+
+function getEventsForDate(date) {
+    return events.filter(event => {
+        const eventDate = new Date(event.start);
+        return isSameDay(eventDate, date);
+    });
+}
+
+function formatTime(date) {
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+// Render functions
+function renderMonthView() {
+    weekdayHeaders.style.display = 'grid';
+    calendarDays.className = 'calendar-days month-view';
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    calendarTitle.textContent = `${monthNames[month]} ${year}`;
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+    
+    // Previous month days
+    const prevMonth = new Date(year, month, 0);
+    const prevMonthDays = prevMonth.getDate();
+    
+    let html = '';
+    
+    // Previous month trailing days
+    for (let i = startDay - 1; i >= 0; i--) {
+        const day = prevMonthDays - i;
+        html += `<div class="calendar-day other-month"><span class="day-number">${day}</span></div>`;
+    }
+    
+    // Current month days
+    const today = new Date();
+    for (let day = 1; day <= totalDays; day++) {
+        const date = new Date(year, month, day);
+        const dayEvents = getEventsForDate(date);
+        const isToday = isSameDay(date, today);
+        
+        html += `<div class="calendar-day${isToday ? ' today' : ''}${dayEvents.length ? ' has-events' : ''}" 
+                      data-date="${date.toISOString()}">
+            <span class="day-number">${day}</span>
+            <div class="day-events">
+                ${dayEvents.slice(0, 3).map(e => `<div class="event-dot" title="${e.title}"></div>`).join('')}
+                ${dayEvents.length > 3 ? `<span class="more-events">+${dayEvents.length - 3}</span>` : ''}
+            </div>
+        </div>`;
+    }
+    
+    // Next month leading days
+    const remainingCells = 42 - (startDay + totalDays);
+    for (let day = 1; day <= remainingCells; day++) {
+        html += `<div class="calendar-day other-month"><span class="day-number">${day}</span></div>`;
+    }
+    
+    calendarDays.innerHTML = html;
+    attachDayListeners();
+}
+
+function renderWeekView() {
+    weekdayHeaders.style.display = 'grid';
+    calendarDays.className = 'calendar-days week-view';
+    
+    // Get start of week (Sunday)
+    const startOfWeek = new Date(currentDate);
+    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+    calendarTitle.textContent = `${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getDate()} – ${monthNames[endOfWeek.getMonth()]} ${endOfWeek.getDate()}, ${endOfWeek.getFullYear()}`;
+    
+    const today = new Date();
+    let html = '';
+    
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        const dayEvents = getEventsForDate(date);
+        const isToday = isSameDay(date, today);
+        
+        html += `<div class="calendar-day week-day${isToday ? ' today' : ''}${dayEvents.length ? ' has-events' : ''}" 
+                      data-date="${date.toISOString()}">
+            <span class="day-number">${date.getDate()}</span>
+            <div class="day-events-list">
+                ${dayEvents.map(e => `
+                    <div class="event-item" data-event-id="${e.id}">
+                        <span class="event-time">${formatTime(e.start)}</span>
+                        <span class="event-title">${e.title}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>`;
+    }
+    
+    calendarDays.innerHTML = html;
+    attachDayListeners();
+}
+
+function renderDayView() {
+    weekdayHeaders.style.display = 'none';
+    calendarDays.className = 'calendar-days day-view';
+    
+    const today = new Date();
+    const isToday = isSameDay(currentDate, today);
+    
+    calendarTitle.textContent = `${dayNames[currentDate.getDay()]}, ${monthNames[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`;
+    
+    const dayEvents = getEventsForDate(currentDate);
+    
+    let html = `<div class="day-view-container${isToday ? ' today' : ''}">
+        <div class="day-view-header">
+            <span class="day-view-date">${currentDate.getDate()}</span>
+            <span class="day-view-weekday">${dayNames[currentDate.getDay()]}</span>
+        </div>
+        <div class="day-view-events">
+            ${dayEvents.length ? dayEvents.map(e => `
+                <div class="day-event-card">
+                    <div class="event-card-time">
+                        <span>${formatTime(e.start)}</span>
+                        <span class="time-separator">–</span>
+                        <span>${formatTime(e.end)}</span>
+                    </div>
+                    <div class="event-card-details">
+                        <h3 class="event-card-title">${e.title}</h3>
+                        ${e.location ? `<p class="event-card-location">📍 ${e.location}</p>` : ''}
+                        ${e.house ? `<p class="event-card-house">🏠 ${e.house}</p>` : ''}
+                        ${e.description ? `<p class="event-card-desc">${e.description}</p>` : ''}
+                        ${e.partifulLink ? `<a href="${e.partifulLink}" class="event-card-link" target="_blank">View on Partiful →</a>` : ''}
+                    </div>
+                </div>
+            `).join('') : '<p class="no-events">No events scheduled</p>'}
+        </div>
+    </div>`;
+    
+    calendarDays.innerHTML = html;
+}
+
+function render() {
+    switch (currentView) {
+        case 'month': renderMonthView(); break;
+        case 'week': renderWeekView(); break;
+        case 'day': renderDayView(); break;
+    }
+}
+
+// Navigation
+function navigate(direction) {
+    switch (currentView) {
+        case 'month':
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            break;
+        case 'week':
+            currentDate.setDate(currentDate.getDate() + (7 * direction));
+            break;
+        case 'day':
+            currentDate.setDate(currentDate.getDate() + direction);
+            break;
+    }
+    render();
+}
+
+function goToToday() {
+    currentDate = new Date();
+    render();
+}
+
+// Event listeners
+prevBtn.addEventListener('click', () => navigate(-1));
+nextBtn.addEventListener('click', () => navigate(1));
+todayBtn.addEventListener('click', goToToday);
+
+viewBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        viewBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentView = btn.dataset.view;
+        render();
+    });
+});
+
+function attachDayListeners() {
+    document.querySelectorAll('.calendar-day:not(.other-month)').forEach(day => {
+        day.addEventListener('click', () => {
+            const date = new Date(day.dataset.date);
+            const dayEvents = getEventsForDate(date);
+            
+            if (currentView === 'month' && dayEvents.length > 0) {
+                showEventModal(date, dayEvents);
+            } else if (currentView === 'month') {
+                currentDate = date;
+                currentView = 'day';
+                viewBtns.forEach(b => b.classList.remove('active'));
+                document.querySelector('[data-view="day"]').classList.add('active');
+                render();
+            }
+        });
+    });
+}
+
+function showEventModal(date, dayEvents) {
+    modalDate.textContent = `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
+    modalEvents.innerHTML = dayEvents.map(e => `
+        <div class="modal-event">
+            <div class="modal-event-time">${formatTime(e.start)} – ${formatTime(e.end)}</div>
+            <div class="modal-event-title">${e.title}</div>
+            ${e.location ? `<div class="modal-event-location">📍 ${e.location}</div>` : ''}
+            ${e.house ? `<div class="modal-event-house">🏠 ${e.house}</div>` : ''}
+            ${e.partifulLink ? `<a href="${e.partifulLink}" class="modal-event-link" target="_blank">Partiful →</a>` : ''}
+        </div>
+    `).join('');
+    eventModal.classList.add('active');
+}
+
+modalClose.addEventListener('click', () => eventModal.classList.remove('active'));
+eventModal.addEventListener('click', (e) => {
+    if (e.target === eventModal) eventModal.classList.remove('active');
+});
+
+// Initial render
+render();
+</script>
+{% endblock %}
+

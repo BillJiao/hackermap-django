@@ -1,9 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
-from django.views.generic import ListView, DetailView, View
+from django.urls import reverse, reverse_lazy
+from django.views.generic import ListView, DetailView, View, CreateView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from .models import HackerHouse, User, Follow
+from .models import HackerHouse, User, Follow, Event
+from .forms import CreateAccountForm
 
 # Create your views here.
 # HackerHouseListView is a class-based view that lists all hacker houses
@@ -27,9 +28,20 @@ class HackerHouseDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        house = self.object
+        
+        # Count followers for this house
+        context['followers_count'] = Follow.objects.filter(following_house=house).count()
+        
         if user.is_authenticated:
-            context['is_member'] = self.object.members.filter(pk=user.pk).exists()
-            context['is_host'] = self.object.host == user
+            context['is_member'] = house.members.filter(pk=user.pk).exists()
+            context['is_host'] = house.host == user
+            context['is_following'] = Follow.objects.filter(
+                follower=user,
+                following_house=house
+            ).exists()
+        else:
+            context['is_following'] = False
         return context
 
 # JoinHouseView handles authenticated users joining a house
@@ -84,15 +96,15 @@ class UserProfileDetailView(DetailView):
         profile_user = self.object
         current_user = self.request.user
         
-        # Count followers and following
-        context['followers_count'] = Follow.objects.filter(following=profile_user).count()
+        # Count followers (users following this profile) and following (users + houses this profile follows)
+        context['followers_count'] = Follow.objects.filter(following_user=profile_user).count()
         context['following_count'] = Follow.objects.filter(follower=profile_user).count()
         
         # Check if current user is following this profile
         if current_user.is_authenticated:
             context['is_following'] = Follow.objects.filter(
                 follower=current_user,
-                following=profile_user
+                following_user=profile_user
             ).exists()
             context['is_own_profile'] = current_user == profile_user
         else:
@@ -132,7 +144,7 @@ class ToggleFollowView(LoginRequiredMixin, View):
         # Check if already following
         follow_relation = Follow.objects.filter(
             follower=current_user,
-            following=target_user
+            following_user=target_user
         ).first()
         
         if follow_relation:
@@ -141,7 +153,63 @@ class ToggleFollowView(LoginRequiredMixin, View):
             messages.success(request, f"You have unfollowed {target_user.profile.display_name or target_user.username}.")
         else:
             # Follow
-            Follow.objects.create(follower=current_user, following=target_user)
+            Follow.objects.create(follower=current_user, following_user=target_user)
             messages.success(request, f"You are now following {target_user.profile.display_name or target_user.username}!")
         
         return redirect(redirect_url)
+
+
+# ToggleFollowHouseView handles authenticated users following/unfollowing houses
+class ToggleFollowHouseView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        house = get_object_or_404(HackerHouse, pk=pk)
+        current_user = request.user
+        
+        # Check if already following
+        follow_relation = Follow.objects.filter(
+            follower=current_user,
+            following_house=house
+        ).first()
+        
+        if follow_relation:
+            # Unfollow
+            follow_relation.delete()
+            messages.success(request, f"You have unfollowed {house.title}.")
+        else:
+            # Follow
+            Follow.objects.create(follower=current_user, following_house=house)
+            messages.success(request, f"You are now following {house.title}!")
+        
+        return redirect('hackerhouse_detail', pk=pk)
+
+# CreateAccountView handles user account creation
+class CreateAccountView(CreateView):
+    model = User
+    form_class = CreateAccountForm
+    template_name = 'registration/create_account_form.html'
+    success_url = reverse_lazy('login')
+
+# EventCalendarView is a class-based view that lists events from followed houses
+class EventCalendarView(TemplateView):
+    template_name = 'event_calendar.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        if user.is_authenticated:
+            # Get houses the user follows
+            followed_house_ids = Follow.objects.filter(
+                follower=user,
+                following_house__isnull=False
+            ).values_list('following_house_id', flat=True)
+            
+            # Filter events to only those from followed houses
+            context['events'] = Event.objects.filter(
+                house_id__in=followed_house_ids
+            ).select_related('created_by', 'house')
+        else:
+            # No events for unauthenticated users
+            context['events'] = Event.objects.none()
+        
+        return context

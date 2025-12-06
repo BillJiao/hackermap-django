@@ -1,0 +1,86 @@
+<!-- project/templates/registration/create_account_form.html -->
+<!-- Description: Template for creating a new account with user registration -->
+<!-- Author: Bill Jiao (jiaobill@bu.edu) -->
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Account — HackerMap{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <span class="login-icon">+</span>
+            <h1 class="login-title">Create Account</h1>
+            <p class="login-subtitle">Join the HackerMap community</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="login-error">
+            <span class="error-icon">!</span>
+            <span>Please fix the errors below.</span>
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="login-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" id="id_username" class="form-input" 
+                       placeholder="Choose a username" 
+                       value="{{ form.username.value|default:'' }}"
+                       maxlength="150"
+                       autofocus required>
+                {% if form.username.errors %}
+                <span class="field-error">{{ form.username.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_email" class="form-label">Email</label>
+                <input type="email" name="email" id="id_email" class="form-input" 
+                       placeholder="you@example.com"
+                       value="{{ form.email.value|default:'' }}"
+                       required>
+                {% if form.email.errors %}
+                <span class="field-error">{{ form.email.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_password1" class="form-label">Password</label>
+                <input type="password" name="password1" id="id_password1" class="form-input" 
+                       placeholder="Create a password"
+                       autocomplete="new-password"
+                       required>
+                {% if form.password1.errors %}
+                <span class="field-error">{{ form.password1.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_password2" class="form-label">Confirm Password</label>
+                <input type="password" name="password2" id="id_password2" class="form-input" 
+                       placeholder="Confirm your password"
+                       autocomplete="new-password"
+                       required>
+                {% if form.password2.errors %}
+                <span class="field-error">{{ form.password2.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="login-button">
+                <span>Create Account</span>
+                <span class="button-arrow">→</span>
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p class="login-footer-text">Already have an account?</p>
+            <a href="{% url 'login' %}" class="login-footer-link">Sign in</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

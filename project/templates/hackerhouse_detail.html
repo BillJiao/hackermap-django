@@ -150,6 +150,15 @@
                 </button>
             </form>
         {% endif %}
+        
+        <!-- Follow House Button -->
+        <form action="{% url 'toggle_follow_house' hackerhouse.pk %}" method="post" class="house-action-form">
+            {% csrf_token %}
+            <button type="submit" class="house-follow-btn {% if is_following %}following{% endif %}" title="{% if is_following %}Unfollow{% else %}Follow{% endif %}">
+                <span class="follow-icon">{% if is_following %}✓{% else %}♡{% endif %}</span>
+                <span class="follow-count">{{ followers_count }}</span>
+            </button>
+        </form>
     </div>
     {% else %}
     <div class="house-action-section">
@@ -157,6 +166,7 @@
             <span class="action-icon">→</span>
             <span>Login to Join</span>
         </a>
+        <span class="house-followers-count">♡ {{ followers_count }}</span>
     </div>
     {% endif %}
 
