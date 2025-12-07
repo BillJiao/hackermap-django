@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Event - {{ hackerhouse.title }}{% endblock %}
+
+{% block content %}
+<div class="form-page-container">
+    <header class="form-page-header">
+        <a href="{% url 'hackerhouse_detail' hackerhouse.pk %}" class="back-link">← Back to {{ hackerhouse.title }}</a>
+        <h1 class="form-page-title">Host an Event</h1>
+        <p class="form-page-subtitle">Create a new event for {{ hackerhouse.title }}</p>
+    </header>
+
+    <form action="{% url 'create_house_event' hackerhouse.pk %}" method="post" class="event-create-form standalone-form">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_title">Event Title</label>
+                    <input type="text" name="title" id="id_title" required placeholder="What's happening?">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_description">Description</label>
+                    <textarea name="description" id="id_description" rows="4" placeholder="What's this event about?"></textarea>
+                </div>
+            </div>
+            
+            <div class="form-row form-row-split">
+                <div class="form-group">
+                    <label for="id_start_time">Start Time</label>
+                    <input type="datetime-local" name="start_time" id="id_start_time" required>
+                </div>
+                <div class="form-group">
+                    <label for="id_end_time">End Time</label>
+                    <input type="datetime-local" name="end_time" id="id_end_time" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_location">Location</label>
+                    <input type="text" name="location" id="id_location" required placeholder="Where is this happening?">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_partiful_link">Partiful Link (optional)</label>
+                    <input type="url" name="partiful_link" id="id_partiful_link" placeholder="https://partiful.com/...">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group form-group-checkbox">
+                    <input type="checkbox" name="is_public" id="id_is_public" checked>
+                    <label for="id_is_public">Public Event</label>
+                    <span class="checkbox-help">Anyone following this house can see this event</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <a href="{% url 'hackerhouse_detail' hackerhouse.pk %}" class="cancel-btn">Cancel</a>
+            <button type="submit" class="create-event-btn">
+                <span class="btn-icon">+</span>
+                <span>Create Event</span>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

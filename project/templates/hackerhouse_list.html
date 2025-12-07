@@ -3,7 +3,15 @@
 {% block title %}HackerMap{% endblock %}
 
 {% block content %}
-<h1>HackerMap</h1>
+<div class="list-header">
+    <h1>HackerMap</h1>
+    {% if user.is_authenticated %}
+    <a href="{% url 'create_house' %}" class="create-house-btn">
+        <span class="btn-icon">+</span>
+        <span>Create House</span>
+    </a>
+    {% endif %}
+</div>
 
 <div class="grid">
     {% for house in hackerhouses %}

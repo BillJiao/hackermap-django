@@ -121,8 +121,12 @@
         {% if is_host %}
             <div class="house-action-status">
                 <span class="action-icon">★</span>
-                <span>You are the host of this house</span>
+                <span>You are the host</span>
             </div>
+            <a href="{% url 'edit_house' hackerhouse.pk %}" class="edit-house-btn">
+                <span class="action-icon">✎</span>
+                <span>Edit House</span>
+            </a>
         {% elif is_member %}
             <form action="{% url 'leave_house' hackerhouse.pk %}" method="post" class="house-action-form">
                 {% csrf_token %}
@@ -218,6 +222,16 @@
             {% endfor %}
         </div>
     </section>
+
+    <!-- Create Event Button (Members Only) -->
+    {% if user.is_authenticated and is_member or is_host %}
+    <section class="create-event-cta">
+        <a href="{% url 'create_house_event' hackerhouse.pk %}" class="create-event-link-btn">
+            <span class="btn-icon">+</span>
+            <span>Host an Event</span>
+        </a>
+    </section>
+    {% endif %}
 
     <!-- Footer Info -->
     <footer class="detail-footer">

@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import ListView, DetailView, View, CreateView, TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, DetailView, View, CreateView, TemplateView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
-from .models import HackerHouse, User, Follow, Event
-from .forms import CreateAccountForm
+from .models import HackerHouse, HouseImage, User, Follow, Event
+from .forms import CreateAccountForm, HackerHouseEditForm, HackerHouseCreateForm, EventCreateForm
 
 # Create your views here.
 # HackerHouseListView is a class-based view that lists all hacker houses
@@ -213,3 +213,137 @@ class EventCalendarView(TemplateView):
             context['events'] = Event.objects.none()
         
         return context
+
+
+# EditHouseView allows hosts to edit their house details
+class EditHouseView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = HackerHouse
+    form_class = HackerHouseEditForm
+    template_name = 'house_edit.html'
+    context_object_name = 'hackerhouse'
+
+    def test_func(self):
+        """Only allow the host of the house to edit it."""
+        house = self.get_object()
+        return self.request.user == house.host
+
+    def handle_no_permission(self):
+        messages.error(self.request, "You don't have permission to edit this house.")
+        return redirect('hackerhouse_detail', pk=self.kwargs['pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['existing_images'] = self.object.images.all()
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        
+        # Handle new image upload
+        new_image = form.cleaned_data.get('new_image')
+        if new_image:
+            caption = form.cleaned_data.get('image_caption', '')
+            HouseImage.objects.create(
+                house=self.object,
+                image=new_image,
+                caption=caption
+            )
+            messages.success(self.request, "Image added successfully!")
+        
+        messages.success(self.request, f"'{self.object.title}' has been updated!")
+        return response
+
+    def get_success_url(self):
+        return reverse('hackerhouse_detail', kwargs={'pk': self.object.pk})
+
+
+# DeleteHouseImageView allows hosts to remove images from their house
+class DeleteHouseImageView(LoginRequiredMixin, View):
+    def post(self, request, pk, image_pk):
+        house = get_object_or_404(HackerHouse, pk=pk)
+        
+        # Only the host can delete images
+        if request.user != house.host:
+            messages.error(request, "You don't have permission to delete this image.")
+            return redirect('edit_house', pk=pk)
+        
+        image = get_object_or_404(HouseImage, pk=image_pk, house=house)
+        image.delete()
+        messages.success(request, "Image deleted successfully!")
+        
+        return redirect('edit_house', pk=pk)
+
+
+# CreateHouseView allows authenticated users to create a new house
+class CreateHouseView(LoginRequiredMixin, CreateView):
+    model = HackerHouse
+    form_class = HackerHouseCreateForm
+    template_name = 'house_create.html'
+
+    def form_valid(self, form):
+        # Set the current user as the host
+        form.instance.host = self.request.user
+        response = super().form_valid(form)
+        
+        # Handle image upload
+        house_image = form.cleaned_data.get('house_image')
+        if house_image:
+            caption = form.cleaned_data.get('image_caption', '')
+            HouseImage.objects.create(
+                house=self.object,
+                image=house_image,
+                caption=caption
+            )
+        
+        # Add the host as a member of the house
+        self.object.members.add(self.request.user)
+        
+        messages.success(self.request, f"'{self.object.title}' has been created!")
+        return response
+
+    def get_success_url(self):
+        return reverse('hackerhouse_detail', kwargs={'pk': self.object.pk})
+
+
+# CreateHouseEventView allows house members to create events for a house
+class CreateHouseEventView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        house = get_object_or_404(HackerHouse, pk=pk)
+        user = request.user
+        
+        # Check if user is a member of this house
+        is_member = house.members.filter(pk=user.pk).exists()
+        is_host = house.host == user
+        
+        if not (is_member or is_host):
+            messages.error(request, "Only house members can create events.")
+            return redirect('hackerhouse_detail', pk=pk)
+        
+        return render(request, 'event_create.html', {'hackerhouse': house})
+    
+    def post(self, request, pk):
+        house = get_object_or_404(HackerHouse, pk=pk)
+        user = request.user
+        
+        # Check if user is a member of this house
+        is_member = house.members.filter(pk=user.pk).exists()
+        is_host = house.host == user
+        
+        if not (is_member or is_host):
+            messages.error(request, "Only house members can create events.")
+            return redirect('hackerhouse_detail', pk=pk)
+        
+        form = EventCreateForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.created_by = user
+            event.house = house
+            event.save()
+            messages.success(request, f"Event '{event.title}' has been created!")
+            return redirect('hackerhouse_detail', pk=pk)
+        else:
+            # Re-render form with errors
+            return render(request, 'event_create.html', {
+                'hackerhouse': house,
+                'form': form,
+            })

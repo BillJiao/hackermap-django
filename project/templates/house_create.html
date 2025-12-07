@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Create House — HackerMap{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <header class="edit-header">
+        <a href="{% url 'hackerhouse_list' %}" class="back-to-house">← Back to Houses</a>
+        <h1 class="edit-title">Create New House</h1>
+        <p class="edit-subtitle">List your hacker house on HackerMap</p>
+    </header>
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="edit-form">
+        {% csrf_token %}
+        
+        <section class="form-section">
+            <h2 class="section-heading">House Details</h2>
+            
+            <div class="form-group">
+                <label for="id_title" class="form-label">House Name</label>
+                <input type="text" name="title" id="id_title" class="form-input" 
+                       value="{{ form.title.value|default:'' }}"
+                       placeholder="e.g. Hacker Haven SF" required>
+                {% if form.title.errors %}
+                <span class="field-error">{{ form.title.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_address" class="form-label">Address</label>
+                <input type="text" name="address" id="id_address" class="form-input" 
+                       value="{{ form.address.value|default:'' }}"
+                       placeholder="e.g. 123 Tech Street, San Francisco, CA" required>
+                {% if form.address.errors %}
+                <span class="field-error">{{ form.address.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_capacity" class="form-label">Member Capacity</label>
+                <input type="number" name="capacity" id="id_capacity" class="form-input" 
+                       value="{{ form.capacity.value|default:'' }}"
+                       min="1" placeholder="Max number of residents" required>
+                {% if form.capacity.errors %}
+                <span class="field-error">{{ form.capacity.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_description" class="form-label">Description</label>
+                <textarea name="description" id="id_description" class="form-input form-textarea" 
+                          rows="5" placeholder="Tell people about your house, its vibe, amenities, and what makes it special...">{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                <span class="field-error">{{ form.description.errors.0 }}</span>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="form-section">
+            <h2 class="section-heading">House Image</h2>
+            <p class="section-description">Add a cover photo for your house listing</p>
+            
+            <div class="form-group">
+                <label for="id_house_image" class="form-label file-label">
+                    <span class="file-icon">📷</span>
+                    <span>Choose Image</span>
+                </label>
+                <input type="file" name="house_image" id="id_house_image" class="form-input file-input" accept="image/*">
+                <span class="file-name" id="file-name-display">No file selected</span>
+                {% if form.house_image.errors %}
+                <span class="field-error">{{ form.house_image.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_image_caption" class="form-label">Image Caption (optional)</label>
+                <input type="text" name="image_caption" id="id_image_caption" class="form-input" 
+                       placeholder="Add a caption for this image">
+            </div>
+        </section>
+
+        <div class="form-actions">
+            <a href="{% url 'hackerhouse_list' %}" class="cancel-btn">Cancel</a>
+            <button type="submit" class="save-btn">
+                <span>Create House</span>
+                <span class="button-arrow">→</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Show selected file name
+document.getElementById('id_house_image').addEventListener('change', function(e) {
+    const fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
+    document.getElementById('file-name-display').textContent = fileName;
+});
+</script>
+{% endblock %}
+

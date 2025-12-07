@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit {{ hackerhouse.title }}{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <header class="edit-header">
+        <a href="{% url 'hackerhouse_detail' hackerhouse.pk %}" class="back-to-house">← Back to House</a>
+        <h1 class="edit-title">Edit House</h1>
+        <p class="edit-subtitle">Update your house details</p>
+    </header>
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Existing Images Section (outside main form to avoid nested forms) -->
+    {% if existing_images %}
+    <section class="form-section images-section">
+        <h2 class="section-heading">Current Images</h2>
+        <div class="existing-images-grid">
+            {% for image in existing_images %}
+            <div class="existing-image-card">
+                <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="existing-image-preview">
+                <div class="existing-image-info">
+                    {% if image.caption %}
+                    <span class="image-caption">{{ image.caption }}</span>
+                    {% else %}
+                    <span class="image-caption no-caption">No caption</span>
+                    {% endif %}
+                    <form action="{% url 'delete_house_image' hackerhouse.pk image.pk %}" method="post" class="delete-image-form">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-image-btn" title="Delete image" 
+                                onclick="return confirm('Are you sure you want to delete this image?')">
+                            ✕
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Main Edit Form -->
+    <form method="post" enctype="multipart/form-data" class="edit-form">
+        {% csrf_token %}
+        
+        <section class="form-section">
+            <h2 class="section-heading">Basic Information</h2>
+            
+            <div class="form-group">
+                <label for="id_title" class="form-label">House Name</label>
+                <input type="text" name="title" id="id_title" class="form-input" 
+                       value="{{ form.title.value|default:'' }}"
+                       placeholder="Enter house name" required>
+                {% if form.title.errors %}
+                <span class="field-error">{{ form.title.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_capacity" class="form-label">Member Capacity</label>
+                <input type="number" name="capacity" id="id_capacity" class="form-input" 
+                       value="{{ form.capacity.value|default:'' }}"
+                       min="1" placeholder="Max number of members" required>
+                {% if form.capacity.errors %}
+                <span class="field-error">{{ form.capacity.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_description" class="form-label">Description</label>
+                <textarea name="description" id="id_description" class="form-input form-textarea" 
+                          rows="5" placeholder="Describe your house...">{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                <span class="field-error">{{ form.description.errors.0 }}</span>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="form-section">
+            <h2 class="section-heading">Add New Image</h2>
+            
+            <div class="form-group">
+                <label for="id_new_image" class="form-label file-label">
+                    <span class="file-icon">📷</span>
+                    <span>Choose Image</span>
+                </label>
+                <input type="file" name="new_image" id="id_new_image" class="form-input file-input" accept="image/*">
+                <span class="file-name" id="file-name-display">No file selected</span>
+                {% if form.new_image.errors %}
+                <span class="field-error">{{ form.new_image.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="id_image_caption" class="form-label">Image Caption (optional)</label>
+                <input type="text" name="image_caption" id="id_image_caption" class="form-input" 
+                       placeholder="Add a caption for this image">
+            </div>
+        </section>
+
+        <div class="form-actions">
+            <a href="{% url 'hackerhouse_detail' hackerhouse.pk %}" class="cancel-btn">Cancel</a>
+            <button type="submit" class="save-btn">
+                <span>Save Changes</span>
+                <span class="button-arrow">→</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Show selected file name
+document.getElementById('id_new_image').addEventListener('change', function(e) {
+    const fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
+    document.getElementById('file-name-display').textContent = fileName;
+});
+</script>
+{% endblock %}
+
