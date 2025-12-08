@@ -1,3 +1,8 @@
+# File: populate_houses.py
+# Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024
+# Description: Django management command to populate the database with sample
+#              hacker houses for testing and demonstration purposes.
+
 import random
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
@@ -5,11 +10,13 @@ from project.models import HackerHouse
 
 User = get_user_model()
 
+
 class Command(BaseCommand):
+    """Management command to create sample hacker houses in the database."""
     help = 'Populates the database with sample hacker houses'
 
     def handle(self, *args, **kwargs):
-        # Ensure a user exists to be the host
+        # Create or get a sample host user
         user, created = User.objects.get_or_create(
             username='sample_host',
             defaults={'email': 'host@example.com'}
@@ -18,10 +25,12 @@ class Command(BaseCommand):
             user.set_password('password')
             user.save()
 
+        # Word lists for generating random house names
         adjectives = ['Cyber', 'Quantum', 'Neural', 'Binary', 'Silicon', 'Digital', 'Crypto', 'Tech', 'Code', 'Data']
         nouns = ['Haven', 'Bunker', 'Fortress', 'Lab', 'Hub', 'Nexus', 'Base', 'Station', 'Loft', 'Manor']
         cities = ['San Francisco', 'New York', 'Austin', 'Miami', 'Seattle', 'Berlin', 'London', 'Tokyo', 'Toronto', 'Singapore']
 
+        # Generate 20 sample houses with random attributes
         houses = []
         for _ in range(20):
             title = f"{random.choice(adjectives)} {random.choice(nouns)}"
@@ -38,5 +47,6 @@ class Command(BaseCommand):
             )
             houses.append(house)
 
+        # Bulk insert all houses at once for efficiency
         HackerHouse.objects.bulk_create(houses)
         self.stdout.write(self.style.SUCCESS(f'Successfully created {len(houses)} hacker houses'))

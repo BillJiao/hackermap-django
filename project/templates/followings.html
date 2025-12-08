@@ -1,0 +1,71 @@
+<!-- File: followings.html -->
+<!-- Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024 -->
+<!-- Description: Template for displaying the list of users the current user follows -->
+<!--              along with their house memberships. -->
+
+{% extends 'base.html' %}
+
+{% block title %}Following{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="followings-container">
+    <header class="followings-header">
+        <h1 class="followings-title">Following</h1>
+        <p class="followings-subtitle">{{ following_count }} {% if following_count == 1 %}person{% else %}people{% endif %} you follow</p>
+    </header>
+
+    <!-- Grid of Followed Users -->
+    {% if followed_users %}
+    <div class="followings-grid">
+        {% for item in followed_users %}
+        <div class="following-card">
+            <a href="{% url 'user_profile_detail' item.user.pk %}" class="following-avatar-link">
+                <div class="following-avatar">
+                    {% if item.user.profile.avatar %}
+                    <img src="{{ item.user.profile.avatar.url }}" alt="{{ item.user.username }}">
+                    {% else %}
+                    <span class="avatar-initial">{{ item.user.username|slice:":1"|upper }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            
+            <div class="following-info">
+                <a href="{% url 'user_profile_detail' item.user.pk %}" class="following-name">
+                    {{ item.user.profile.display_name|default:item.user.username }}
+                </a>
+                <span class="following-username">@{{ item.user.username }}</span>
+            </div>
+            
+            {% if item.houses %}
+            <div class="following-houses">
+                <span class="houses-label">Member of</span>
+                <div class="houses-list">
+                    {% for house in item.houses %}
+                    <a href="{% url 'hackerhouse_detail' house.pk %}" class="house-tag">
+                        <span class="house-icon">🏠</span>
+                        <span class="house-name">{{ house.title }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="following-houses empty">
+                <span class="houses-label">Not in any house yet</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- Empty State when not following anyone -->
+    <div class="followings-empty">
+        <div class="empty-icon">👥</div>
+        <h2>You're not following anyone yet</h2>
+        <p>Follow people from house pages to see them here.</p>
+        <a href="{% url 'hackerhouse_list' %}" class="browse-houses-btn">Browse Houses</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

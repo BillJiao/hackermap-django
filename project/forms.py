@@ -1,3 +1,8 @@
+# File: forms.py
+# Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024
+# Description: Django forms for the HackerMap application - handles user registration,
+#              house creation/editing, and event creation with validation.
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
@@ -5,7 +10,13 @@ from .models import HackerHouse, Event
 
 User = get_user_model()
 
+#############################################
+# USER AUTHENTICATION FORMS
+#############################################
+
 class CreateAccountForm(UserCreationForm):
+    """Form for creating a new user account with email field."""
+    
     email = forms.EmailField(required=True)
 
     class Meta:
@@ -13,12 +24,17 @@ class CreateAccountForm(UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
     def save(self, commit=True):
+        """Save user with email from cleaned data."""
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
         if commit:
             user.save()
         return user
 
+
+#############################################
+# HACKER HOUSE FORMS
+#############################################
 
 class HackerHouseCreateForm(forms.ModelForm):
     """Form for authenticated users to create a new house."""
@@ -71,6 +87,10 @@ class HackerHouseEditForm(forms.ModelForm):
         }
 
 
+#############################################
+# EVENT FORMS
+#############################################
+
 class EventCreateForm(forms.ModelForm):
     """Form for house members to create events."""
     
@@ -108,6 +128,7 @@ class EventCreateForm(forms.ModelForm):
         }
     
     def clean(self):
+        """Validate that end time comes after start time."""
         cleaned_data = super().clean()
         start_time = cleaned_data.get('start_time')
         end_time = cleaned_data.get('end_time')

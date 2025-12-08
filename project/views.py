@@ -1,3 +1,8 @@
+# File: views.py
+# Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024
+# Description: Django views for the HackerMap application - handles all page rendering
+#              and user interactions including house listing, profiles, following, and events.
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, DetailView, View, CreateView, TemplateView, UpdateView
@@ -6,26 +11,34 @@ from django.contrib import messages
 from .models import HackerHouse, HouseImage, User, Follow, Event
 from .forms import CreateAccountForm, HackerHouseEditForm, HackerHouseCreateForm, EventCreateForm
 
-# Create your views here.
-# HackerHouseListView is a class-based view that lists all hacker houses
+
+#############################################
+# HACKER HOUSE VIEWS
+#############################################
+
 class HackerHouseListView(ListView):
+    """Display a list of all hacker houses with their images."""
     model = HackerHouse
     template_name = "hackerhouse_list.html"
     context_object_name = "hackerhouses" 
 
     def get_queryset(self):
+        """Return all houses with prefetched images for efficiency."""
         return HackerHouse.objects.prefetch_related('images').all()    
         
-# HackerHouseDetailView is a class-based view that displays a single hacker house
+
 class HackerHouseDetailView(DetailView):
+    """Display details of a single hacker house including members and follow status."""
     model = HackerHouse
     template_name = "hackerhouse_detail.html"
     context_object_name = "hackerhouse"
 
     def get_queryset(self):
+        """Return house with related host, images, and members."""
         return HackerHouse.objects.select_related('host').prefetch_related('images', 'members').all()
 
     def get_context_data(self, **kwargs):
+        """Add membership, host status, and follow status to context."""
         context = super().get_context_data(**kwargs)
         user = self.request.user
         house = self.object
@@ -44,9 +57,12 @@ class HackerHouseDetailView(DetailView):
             context['is_following'] = False
         return context
 
-# JoinHouseView handles authenticated users joining a house
+
 class JoinHouseView(LoginRequiredMixin, View):
+    """Handle POST requests for authenticated users to join a house."""
+    
     def post(self, request, pk):
+        """Process join request with capacity and status checks."""
         house = get_object_or_404(HackerHouse, pk=pk)
         user = request.user
         
@@ -65,9 +81,12 @@ class JoinHouseView(LoginRequiredMixin, View):
         
         return redirect('hackerhouse_detail', pk=pk)
 
-# LeaveHouseView handles authenticated users leaving a house
+
 class LeaveHouseView(LoginRequiredMixin, View):
+    """Handle POST requests for authenticated users to leave a house."""
+    
     def post(self, request, pk):
+        """Process leave request, preventing hosts from leaving their own house."""
         house = get_object_or_404(HackerHouse, pk=pk)
         user = request.user
         
@@ -82,16 +101,23 @@ class LeaveHouseView(LoginRequiredMixin, View):
         
         return redirect('hackerhouse_detail', pk=pk)
 
-# UserProfileDetailView is a class-based view that displays a single user profile
+
+#############################################
+# USER PROFILE AND FOLLOW VIEWS
+#############################################
+
 class UserProfileDetailView(DetailView):
+    """Displays a user's profile with follow stats and bio."""
     model = User
     template_name = "user_profile_detail.html"
     context_object_name = "profile_user"
 
     def get_queryset(self):
+        """Return users with their related profiles."""
         return User.objects.select_related('profile').all()
 
     def get_context_data(self, **kwargs):
+        """Add follow stats, follow status, and referral house to context."""
         context = super().get_context_data(**kwargs)
         profile_user = self.object
         current_user = self.request.user
@@ -124,9 +150,11 @@ class UserProfileDetailView(DetailView):
         return context
 
 
-# ToggleFollowView handles authenticated users following/unfollowing other users
 class ToggleFollowView(LoginRequiredMixin, View):
+    """Handle POST requests to follow or unfollow another user."""
+    
     def post(self, request, pk):
+        """Toggle follow relationship between current user and target user."""
         target_user = get_object_or_404(User, pk=pk)
         current_user = request.user
         from_house = request.POST.get('from_house')
@@ -159,9 +187,11 @@ class ToggleFollowView(LoginRequiredMixin, View):
         return redirect(redirect_url)
 
 
-# ToggleFollowHouseView handles authenticated users following/unfollowing houses
 class ToggleFollowHouseView(LoginRequiredMixin, View):
+    """Handle POST requests to follow or unfollow a house."""
+    
     def post(self, request, pk):
+        """Toggle follow relationship between current user and target house."""
         house = get_object_or_404(HackerHouse, pk=pk)
         current_user = request.user
         
@@ -182,18 +212,29 @@ class ToggleFollowHouseView(LoginRequiredMixin, View):
         
         return redirect('hackerhouse_detail', pk=pk)
 
-# CreateAccountView handles user account creation
+
+#############################################
+# AUTHENTICATION VIEWS
+#############################################
+
 class CreateAccountView(CreateView):
+    """Handles new user registration."""
     model = User
     form_class = CreateAccountForm
     template_name = 'registration/create_account_form.html'
     success_url = reverse_lazy('login')
 
-# EventCalendarView is a class-based view that lists events from followed houses
+
+#############################################
+# EVENT VIEWS
+#############################################
+
 class EventCalendarView(TemplateView):
+    """Displays a calendar of events from houses the user follows."""
     template_name = 'event_calendar.html'
 
     def get_context_data(self, **kwargs):
+        """Build list of events from houses the user follows."""
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
@@ -215,8 +256,12 @@ class EventCalendarView(TemplateView):
         return context
 
 
-# EditHouseView allows hosts to edit their house details
+#############################################
+# HOUSE MANAGEMENT VIEWS (CREATE/EDIT/DELETE)
+#############################################
+
 class EditHouseView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Allows hosts to edit their house details and add/remove images."""
     model = HackerHouse
     form_class = HackerHouseEditForm
     template_name = 'house_edit.html'
@@ -232,11 +277,13 @@ class EditHouseView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return redirect('hackerhouse_detail', pk=self.kwargs['pk'])
 
     def get_context_data(self, **kwargs):
+        """Add existing house images to context for display."""
         context = super().get_context_data(**kwargs)
         context['existing_images'] = self.object.images.all()
         return context
 
     def form_valid(self, form):
+        """Save house updates and handle new image upload."""
         response = super().form_valid(form)
         
         # Handle new image upload
@@ -254,12 +301,15 @@ class EditHouseView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return response
 
     def get_success_url(self):
+        """Return to house detail page after successful edit."""
         return reverse('hackerhouse_detail', kwargs={'pk': self.object.pk})
 
 
-# DeleteHouseImageView allows hosts to remove images from their house
 class DeleteHouseImageView(LoginRequiredMixin, View):
+    """Handle POST requests to delete a house image."""
+    
     def post(self, request, pk, image_pk):
+        """Delete specified image if user is the house host."""
         house = get_object_or_404(HackerHouse, pk=pk)
         
         # Only the host can delete images
@@ -274,13 +324,14 @@ class DeleteHouseImageView(LoginRequiredMixin, View):
         return redirect('edit_house', pk=pk)
 
 
-# CreateHouseView allows authenticated users to create a new house
 class CreateHouseView(LoginRequiredMixin, CreateView):
+    """Allows authenticated users to create a new hacker house."""
     model = HackerHouse
     form_class = HackerHouseCreateForm
     template_name = 'house_create.html'
 
     def form_valid(self, form):
+        """Save house, handle image upload, and add host as member."""
         # Set the current user as the host
         form.instance.host = self.request.user
         response = super().form_valid(form)
@@ -302,12 +353,15 @@ class CreateHouseView(LoginRequiredMixin, CreateView):
         return response
 
     def get_success_url(self):
+        """Return to new house detail page after creation."""
         return reverse('hackerhouse_detail', kwargs={'pk': self.object.pk})
 
 
-# CreateHouseEventView allows house members to create events for a house
 class CreateHouseEventView(LoginRequiredMixin, View):
+    """Handle GET and POST requests for creating house events."""
+    
     def get(self, request, pk):
+        """Display event creation form if user is a house member."""
         house = get_object_or_404(HackerHouse, pk=pk)
         user = request.user
         
@@ -322,6 +376,7 @@ class CreateHouseEventView(LoginRequiredMixin, View):
         return render(request, 'event_create.html', {'hackerhouse': house})
     
     def post(self, request, pk):
+        """Process event creation form if user is a house member."""
         house = get_object_or_404(HackerHouse, pk=pk)
         user = request.user
         
@@ -347,3 +402,35 @@ class CreateHouseEventView(LoginRequiredMixin, View):
                 'hackerhouse': house,
                 'form': form,
             })
+
+
+class FollowingsView(LoginRequiredMixin, TemplateView):
+    """Shows all users the current user follows with their house memberships."""
+    template_name = 'followings.html'
+
+    def get_context_data(self, **kwargs):
+        """Build list of followed users with their house memberships."""
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Get all users the current user follows
+        user_follows = Follow.objects.filter(
+            follower=user,
+            following_user__isnull=False
+        ).select_related('following_user__profile').prefetch_related('following_user__member_houses')
+        
+        # Build list of followed users with their house memberships
+        followed_users = []
+        for follow in user_follows:
+            followed_user = follow.following_user
+            houses = list(followed_user.member_houses.all())
+            followed_users.append({
+                'user': followed_user,
+                'houses': houses,
+                'followed_at': follow.created_at,
+            })
+        
+        context['followed_users'] = followed_users
+        context['following_count'] = len(followed_users)
+        
+        return context

@@ -1,3 +1,8 @@
+<!-- File: event_calendar.html -->
+<!-- Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024 -->
+<!-- Description: Template for displaying an interactive event calendar with -->
+<!--              month/week/day views showing events from followed houses. -->
+
 {% extends "base.html" %}
 {% load static %}
 
@@ -56,6 +61,11 @@
 </div>
 
 <script>
+// =============================================
+// CALENDAR JAVASCRIPT
+// Handles calendar rendering, navigation, and event display
+// =============================================
+
 // Events data from Django
 const events = [
     {% for event in events %}
@@ -73,11 +83,11 @@ const events = [
     {% endfor %}
 ];
 
-// Calendar state
-let currentDate = new Date();
-let currentView = 'month';
+// Calendar state variables
+let currentDate = new Date();  // Currently displayed date
+let currentView = 'month';     // Current view mode (month/week/day)
 
-// DOM elements
+// DOM element references
 const calendarTitle = document.getElementById('calendarTitle');
 const calendarDays = document.getElementById('calendarDays');
 const weekdayHeaders = document.getElementById('weekdayHeaders');
@@ -90,7 +100,9 @@ const modalClose = document.getElementById('modalClose');
 const modalDate = document.getElementById('modalDate');
 const modalEvents = document.getElementById('modalEvents');
 
-// Utility functions
+// =============================================
+// UTILITY FUNCTIONS
+// =============================================
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
                     'July', 'August', 'September', 'October', 'November', 'December'];
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -112,7 +124,9 @@ function formatTime(date) {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
-// Render functions
+// =============================================
+// RENDER FUNCTIONS
+// =============================================
 function renderMonthView() {
     weekdayHeaders.style.display = 'grid';
     calendarDays.className = 'calendar-days month-view';
@@ -253,7 +267,10 @@ function render() {
     }
 }
 
-// Navigation
+// =============================================
+// NAVIGATION FUNCTIONS
+// =============================================
+
 function navigate(direction) {
     switch (currentView) {
         case 'month':
@@ -274,7 +291,10 @@ function goToToday() {
     render();
 }
 
-// Event listeners
+// =============================================
+// EVENT LISTENERS AND INITIALIZATION
+// =============================================
+
 prevBtn.addEventListener('click', () => navigate(-1));
 nextBtn.addEventListener('click', () => navigate(1));
 todayBtn.addEventListener('click', goToToday);

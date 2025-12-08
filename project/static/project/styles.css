@@ -1,3 +1,14 @@
+/* ========================================
+   File: styles.css
+   Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024
+   Description: Main stylesheet for the HackerMap application - includes styles
+                for layout, cards, forms, navigation, and all UI components.
+   ======================================== */
+
+/* ========================================
+   CSS VARIABLES AND BASE STYLES
+   ======================================== */
+
 :root {
     --bg-color: #ffffff;
     --card-bg: #ffffff;
@@ -2859,5 +2870,266 @@ button.profile-widget-logout:hover {
     .cancel-btn {
         width: 100%;
         justify-content: center;
+    }
+}
+
+/* ========================================
+   FOLLOWINGS PAGE STYLES
+   ======================================== */
+
+.followings-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.followings-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.followings-title {
+    font-family: 'Andale Mono', monospace;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.followings-subtitle {
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+/* Grid of following cards */
+.followings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Individual following card */
+.following-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.following-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Avatar */
+.following-avatar-link {
+    text-decoration: none;
+    margin-bottom: 1rem;
+}
+
+.following-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 3px solid var(--card-bg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+}
+
+.following-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.following-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.following-avatar .avatar-initial {
+    font-family: 'Andale Mono', monospace;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+/* User info */
+.following-info {
+    margin-bottom: 1rem;
+}
+
+.following-name {
+    display: block;
+    font-family: 'Andale Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    margin-bottom: 0.25rem;
+    transition: color 0.2s ease;
+}
+
+.following-name:hover {
+    color: #667eea;
+}
+
+.following-username {
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Houses section */
+.following-houses {
+    width: 100%;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.following-houses .houses-label {
+    display: block;
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+}
+
+.following-houses.empty .houses-label {
+    margin-bottom: 0;
+    font-style: italic;
+    text-transform: none;
+    font-weight: 400;
+}
+
+.houses-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.house-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 999px;
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.house-tag:hover {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    border-color: var(--sidebar-bg);
+}
+
+.house-tag .house-icon {
+    font-size: 0.85rem;
+}
+
+.house-tag .house-name {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Empty state */
+.followings-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--card-bg);
+    border: 1px dashed rgba(0, 0, 0, 0.15);
+    border-radius: 16px;
+}
+
+.followings-empty .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+}
+
+.followings-empty h2 {
+    font-family: 'PP Editorial New', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.followings-empty p {
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem 0;
+}
+
+.browse-houses-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    border: none;
+    border-radius: 999px;
+    font-family: 'Andale Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+}
+
+.browse-houses-btn:hover {
+    background: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments for followings page */
+@media (max-width: 600px) {
+    .followings-container {
+        padding: 1rem;
+    }
+    
+    .followings-title {
+        font-size: 2rem;
+    }
+    
+    .followings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .following-avatar {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .following-avatar .avatar-initial {
+        font-size: 1.75rem;
     }
 }

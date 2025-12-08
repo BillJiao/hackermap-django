@@ -1,8 +1,14 @@
+<!-- File: hackerhouse_list.html -->
+<!-- Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024 -->
+<!-- Description: Template for displaying the list of all hacker houses with cards -->
+<!--              showing house image, title, address, description, and capacity. -->
+
 {% extends 'base.html' %}
 
 {% block title %}HackerMap{% endblock %}
 
 {% block content %}
+<!-- Page Header with Title and Create Button -->
 <div class="list-header">
     <h1>HackerMap</h1>
     {% if user.is_authenticated %}
@@ -14,6 +20,7 @@
 </div>
 
 <div class="grid">
+    <!-- Loop through all houses and display as cards -->
     {% for house in hackerhouses %}
     <a href="{% url 'hackerhouse_detail' house.pk %}" class="card-link">
         <article class="card">

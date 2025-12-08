@@ -1,7 +1,16 @@
+# File: models.py
+# Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024
+# Description: Django models for the HackerMap application - defines User, Profile,
+#              HackerHouse, HouseImage, Follow, and Event data structures.
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
+#############################################
+# USER AND PROFILE MODELS
+#############################################
 
 class User(AbstractUser):
     """Custom user that enforces unique emails for authentication."""
@@ -29,6 +38,10 @@ class Profile(models.Model):
     def __str__(self) -> str:
         return self.display_name
 
+
+#############################################
+# HACKER HOUSE AND IMAGE MODELS
+#############################################
 
 class HackerHouse(models.Model):
     """Represents a shared living space that hosts can list and manage."""
@@ -68,6 +81,10 @@ class HouseImage(models.Model):
     def __str__(self) -> str:
         return f"Image for {self.house.title}"
 
+
+#############################################
+# SOCIAL/FOLLOW MODEL
+#############################################
 
 class Follow(models.Model):
     """Directed relationship used to build personalized house/event feeds.
@@ -136,6 +153,10 @@ class Follow(models.Model):
         target = self.following_user or self.following_house
         return f"{self.follower} -> {target}"
 
+
+#############################################
+# EVENT MODEL
+#############################################
 
 class Event(models.Model):
     """Calendar entry for gatherings hosted by users or specific houses."""

@@ -1,3 +1,8 @@
+<!-- File: base.html -->
+<!-- Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024 -->
+<!-- Description: Base template for the HackerMap application - provides the main -->
+<!--              layout structure, sidebar navigation, and user profile widget. -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -64,7 +69,7 @@
                 </a>
             </li>
             <li class="sidebar-item">
-                <a href="#" class="sidebar-link">
+                <a href="{% url 'followings' %}" class="sidebar-link">
                     <span class="sidebar-icon">★</span>
                     <span class="sidebar-text">Following</span>
                 </a>
@@ -107,11 +112,10 @@
         </ul>
     </nav>
 
-    <!-- Main Content -->
+    <!-- Main Content Container - Content from child templates injected here -->
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
 </body>
 
 </html>
-

@@ -1,3 +1,8 @@
+<!-- File: house_create.html -->
+<!-- Author: Bill Jiao (jiaobill@bu.edu), 12/8/2024 -->
+<!-- Description: Template for creating a new hacker house with form fields for -->
+<!--              name, address, capacity, description, and cover image. -->
+
 {% extends 'base.html' %}
 
 {% block title %}Create House — HackerMap{% endblock %}
@@ -100,7 +105,7 @@
 </div>
 
 <script>
-// Show selected file name
+// Update file input label with selected filename
 document.getElementById('id_house_image').addEventListener('change', function(e) {
     const fileName = e.target.files[0] ? e.target.files[0].name : 'No file selected';
     document.getElementById('file-name-display').textContent = fileName;
