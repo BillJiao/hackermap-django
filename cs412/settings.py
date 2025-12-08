@@ -132,8 +132,8 @@ CS_DEPLOYMENT_HOSTNAME = 'cs-webapps.bu.edu'
 
 if socket.gethostname() == CS_DEPLOYMENT_HOSTNAME:
     # Replace 'username' with your BU username
-    STATIC_URL = '/billjiao/static/'
-    MEDIA_URL = '/billjiao/media/'
+    STATIC_URL = '/jiaobill/static/'
+    MEDIA_URL = '/jiaobill/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
